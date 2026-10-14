@@ -1174,6 +1174,7 @@
     </div>
   </div>
   <div style="display:flex;gap:0.75rem;align-items:center;">
+    <a href="#feedback" class="btn btn-outline zfb-open zfb-navbtn">&#9733; Rate your class</a>
     <a href="#enrol" class="btn btn-gold">Find a tutor</a>
   </div>
 </nav>
@@ -1647,6 +1648,16 @@
       </div>
 
     </div><!-- /form-box -->
+
+    <!-- Feedback card -->
+    <div class="zfb-card">
+      <div>
+        <div class="zfb-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <h3>Already learning with Zidi?</h3>
+        <p>Tell us how your last class went. It takes 30 seconds.</p>
+      </div>
+      <a href="#feedback" class="btn btn-gold zfb-open">Rate your class</a>
+    </div>
   </div>
 </section>
 
@@ -1852,6 +1863,7 @@
       <div class="footer-links">
         <a href="#subjects">Subjects</a>
         <a href="#pricing">Pricing</a>
+        <a href="#feedback" class="zfb-open">Rate your class</a>
       </div>
     </div>
 
@@ -2570,6 +2582,198 @@
       }
     });
   })();
+</script>
+
+<!-- ═══════════════════════════════ CLASS FEEDBACK POP-UP ═══════════════════════════════ -->
+<style>
+  .zfb-overlay{position:fixed;inset:0;background:rgba(14,22,35,.6);opacity:0;pointer-events:none;transition:opacity .2s;z-index:100000}
+  .zfb-overlay.open{opacity:1;pointer-events:auto}
+  .zfb-modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-46%);opacity:0;pointer-events:none;transition:all .22s;z-index:100001;
+    width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow-y:auto;background:#fff;border-radius:12px;padding:28px 24px;
+    font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#1A1A2E;box-shadow:0 20px 60px rgba(14,22,35,.35);box-sizing:border-box}
+  .zfb-modal.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
+  .zfb-modal *{box-sizing:border-box}
+  .zfb-close{position:absolute;top:12px;right:12px;width:44px;height:44px;border:0;background:transparent;font-size:26px;line-height:1;color:#6B6B7E;cursor:pointer;border-radius:8px}
+  .zfb-close:hover{background:#F8F4ED}
+  .zfb-modal h2{font-family:'Fraunces',Georgia,serif;font-size:28px;line-height:1.1;margin:0 40px 6px 0;color:#0E1623}
+  .zfb-lead{margin:0 0 20px;color:#6B6B7E}
+  .zfb-lead strong{color:#1A1A2E}
+  .zfb-modal fieldset{border:0;padding:0;margin:0 0 20px}
+  .zfb-modal legend{font-weight:700;margin-bottom:8px;padding:0}
+  .zfb-opt{font-weight:400;color:#6B6B7E;font-size:14px}
+  .zfb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .zfb-stars{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:4px}
+  .zfb-stars input,.zfb-tags input{position:absolute;opacity:0;width:1px;height:1px}
+  .zfb-stars label{cursor:pointer;width:48px;height:48px;display:grid;place-items:center;border-radius:10px}
+  .zfb-stars svg{width:38px;height:38px;fill:#EDE8DF;stroke:#CFC6B6;stroke-width:1;transition:fill .15s}
+  .zfb-stars label:hover svg,.zfb-stars label:hover~label svg,.zfb-stars input:checked~label svg{fill:#E5A800;stroke:#C98A00}
+  .zfb-stars input:focus-visible+label,.zfb-tags input:focus-visible+label{outline:3px solid #C98A00;outline-offset:2px}
+  .zfb-rtext{min-height:22px;margin-top:4px;color:#6B6B7E;font-size:15px}
+  .zfb-tags{display:flex;flex-wrap:wrap;gap:8px}
+  .zfb-tags label{cursor:pointer;padding:9px 14px;min-height:44px;display:inline-flex;align-items:center;border-radius:999px;border:1.5px solid #EDE8DF;background:#F8F4ED;font-size:15px}
+  .zfb-tags input:checked+label{background:#0E1623;color:#fff;border-color:#0E1623}
+  .zfb-field{margin-bottom:16px}
+  .zfb-field label{display:block;font-weight:600;margin-bottom:6px}
+  .zfb-modal input[type=text],.zfb-modal select,.zfb-modal textarea{width:100%;font:inherit;color:#1A1A2E;padding:12px 14px;min-height:48px;border:1.5px solid #EDE8DF;border-radius:6px;background:#fff}
+  .zfb-modal textarea{min-height:96px;resize:vertical}
+  .zfb-modal input:focus,.zfb-modal select:focus,.zfb-modal textarea:focus{outline:none;border-color:#C98A00;box-shadow:0 0 0 3px rgba(201,138,0,.12)}
+  .zfb-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:480px){.zfb-row{grid-template-columns:1fr}}
+  .zfb-card{max-width:620px;margin-top:1.5rem;background:var(--midnight,#0E1623);color:#fff;border-radius:16px;padding:1.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1.25rem;flex-wrap:wrap}
+  .zfb-card h3{font-family:var(--ff-display);font-size:1.35rem;font-weight:700;margin-bottom:.3rem}
+  .zfb-card p{color:rgba(255,255,255,.7);font-size:.92rem;line-height:1.5}
+  .zfb-card .zfb-stars{color:var(--gold);letter-spacing:.15em;font-size:.95rem;margin-bottom:.4rem}
+  .zfb-card .btn{white-space:nowrap}
+  .zfb-navbtn{white-space:nowrap}
+  @media (max-width:720px){.zfb-navbtn{display:none}}
+  .zfb-submit{width:100%;min-height:52px;border:0;border-radius:6px;background:#C98A00;color:#0E1623;font:700 17px 'Plus Jakarta Sans',system-ui,sans-serif;cursor:pointer}
+  .zfb-submit:hover{background:#E5A800}
+  .zfb-submit:disabled{opacity:.6;cursor:default}
+  .zfb-error{color:#D94F1E;font-size:15px;min-height:22px;margin:8px 0 0}
+  .zfb-privacy{color:#6B6B7E;font-size:13px;margin:10px 0 0;text-align:center}
+  .zfb-thanks{display:none;text-align:center;padding:12px 0}
+  .zfb-thanks h2{margin:0 0 8px}
+  .zfb-share{display:none;margin-top:16px}
+  .zfb-share a{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:6px;background:#1A4731;color:#fff;font-weight:700;text-decoration:none}
+</style>
+
+<div class="zfb-overlay" id="zfbOverlay"></div>
+<div class="zfb-modal" id="zfbModal" role="dialog" aria-modal="true" aria-labelledby="zfbTitle" aria-hidden="true">
+  <button type="button" class="zfb-close" id="zfbClose" aria-label="Close">&times;</button>
+  <form id="zfbForm" novalidate>
+    <h2 id="zfbTitle">How was your class?</h2>
+    <p class="zfb-lead" id="zfbLead">It takes 30 seconds and helps your tutor get even better.</p>
+    <input type="hidden" name="tutor" id="zfbTutor">
+    <input type="hidden" name="learner" id="zfbLearner">
+    <input type="hidden" name="subject" id="zfbSubject">
+    <input type="hidden" name="_subject" value="Zidi class feedback">
+    <input type="hidden" name="form_type" value="class_feedback">
+
+    <fieldset>
+      <legend>Your rating</legend>
+      <div class="zfb-stars" role="radiogroup" aria-label="Rating from 1 to 5 stars">
+        <input type="radio" name="rating" id="zfb5" value="5"><label for="zfb5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z"/></svg><span class="zfb-sr">5 stars</span></label>
+        <input type="radio" name="rating" id="zfb4" value="4"><label for="zfb4"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z"/></svg><span class="zfb-sr">4 stars</span></label>
+        <input type="radio" name="rating" id="zfb3" value="3"><label for="zfb3"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z"/></svg><span class="zfb-sr">3 stars</span></label>
+        <input type="radio" name="rating" id="zfb2" value="2"><label for="zfb2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z"/></svg><span class="zfb-sr">2 stars</span></label>
+        <input type="radio" name="rating" id="zfb1" value="1"><label for="zfb1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z"/></svg><span class="zfb-sr">1 star</span></label>
+      </div>
+      <div class="zfb-rtext" id="zfbRText" aria-live="polite"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>What stood out? <span class="zfb-opt">(tap any)</span></legend>
+      <div class="zfb-tags">
+        <input type="checkbox" name="tags" id="zfbt1" value="Tutor was patient"><label for="zfbt1">Tutor was patient</label>
+        <input type="checkbox" name="tags" id="zfbt2" value="Learned something new"><label for="zfbt2">Learned something new</label>
+        <input type="checkbox" name="tags" id="zfbt3" value="Fun and engaging"><label for="zfbt3">Fun and engaging</label>
+        <input type="checkbox" name="tags" id="zfbt4" value="Too fast"><label for="zfbt4">Too fast</label>
+        <input type="checkbox" name="tags" id="zfbt5" value="Too slow"><label for="zfbt5">Too slow</label>
+        <input type="checkbox" name="tags" id="zfbt6" value="Connection or tech issues"><label for="zfbt6">Connection or tech issues</label>
+      </div>
+    </fieldset>
+
+    <div class="zfb-field">
+      <label for="zfbComment">Anything else? <span class="zfb-opt">(optional)</span></label>
+      <textarea id="zfbComment" name="comment" maxlength="1000" placeholder="Tell us what worked, or what we can do better"></textarea>
+    </div>
+
+    <div class="zfb-row">
+      <div class="zfb-field">
+        <label for="zfbName">Your name <span class="zfb-opt">(optional)</span></label>
+        <input type="text" id="zfbName" name="name" autocomplete="name">
+      </div>
+      <div class="zfb-field">
+        <label for="zfbRole">I am</label>
+        <select id="zfbRole" name="role"><option value="Parent">A parent</option><option value="Learner">The learner</option></select>
+      </div>
+    </div>
+
+    <button type="submit" class="zfb-submit" id="zfbSubmit">Send feedback</button>
+    <p class="zfb-error" id="zfbError" role="alert"></p>
+    <p class="zfb-privacy">Only the Zidi team sees your answers. We use them to improve classes.</p>
+  </form>
+
+  <div class="zfb-thanks" id="zfbThanks">
+    <h2>Thank you!</h2>
+    <p>Your feedback goes straight to the Zidi team.</p>
+    <div class="zfb-share" id="zfbShare">
+      <p>Glad you enjoyed it. Know a family who would love Zidi?</p>
+      <a id="zfbShareLink" target="_blank" rel="noopener">Share Zidi on WhatsApp</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  // Same Formspree form as the waitlist. To keep feedback separate,
+  // create a new form at formspree.io and paste its URL here.
+  var FORMSPREE_URL = 'https://formspree.io/f/mjgneead';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var modal = $('zfbModal'), overlay = $('zfbOverlay'), form = $('zfbForm'), lastFocus = null;
+
+  // Prefill from the link: ?tutor=Deborah&subject=Yoruba&learner=Tobi
+  var p = new URLSearchParams(location.search);
+  var clean = function (v) { return (v || '').replace(/[<>]/g, '').slice(0, 60); };
+  var tutor = clean(p.get('tutor')), learner = clean(p.get('learner')), subject = clean(p.get('subject'));
+  $('zfbTutor').value = tutor; $('zfbLearner').value = learner; $('zfbSubject').value = subject;
+  if (tutor) {
+    var lead = $('zfbLead');
+    lead.textContent = 'Rate today’s ' + (subject ? subject + ' ' : '') + 'class with ';
+    var b = document.createElement('strong'); b.textContent = tutor; lead.appendChild(b);
+    lead.appendChild(document.createTextNode('. It takes 30 seconds.'));
+  }
+
+  function openFb() {
+    lastFocus = document.activeElement;
+    overlay.classList.add('open'); modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
+    setTimeout(function () { $('zfb5').focus(); }, 50);
+  }
+  function closeFb() {
+    overlay.classList.remove('open'); modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true'); document.body.style.overflow = '';
+    if (location.hash === '#feedback') history.replaceState(null, '', location.pathname + location.search);
+    if (lastFocus) lastFocus.focus();
+  }
+  window.openFeedback = openFb;
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('.zfb-open, a[href="#feedback"]');
+    if (a) { e.preventDefault(); openFb(); }
+  });
+  $('zfbClose').addEventListener('click', closeFb);
+  overlay.addEventListener('click', closeFb);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) closeFb(); });
+  if (location.hash === '#feedback') openFb();
+  window.addEventListener('hashchange', function () { if (location.hash === '#feedback') openFb(); });
+
+  var words = { 1: 'Not good', 2: 'Could be better', 3: 'Okay', 4: 'Good', 5: 'Excellent!' };
+  form.querySelectorAll('input[name=rating]').forEach(function (r) {
+    r.addEventListener('change', function () { $('zfbRText').textContent = words[r.value]; $('zfbError').textContent = ''; });
+  });
+  $('zfbShareLink').href = 'https://wa.me/?text=' + encodeURIComponent('My child is learning with Zidi, expert tutors for Yoruba, Igbo and more: https://www.learnwithzidi.com');
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var rating = form.querySelector('input[name=rating]:checked'), btn = $('zfbSubmit'), err = $('zfbError');
+    if (!rating) { err.textContent = 'Please choose a star rating.'; return; }
+    var data = new FormData(form);
+    var tags = data.getAll('tags'); data.delete('tags'); data.append('tags', tags.join(', '));
+    btn.disabled = true; btn.textContent = 'Sending…'; err.textContent = '';
+    fetch(FORMSPREE_URL, { method: 'POST', body: data, headers: { 'Accept': 'application/json' } })
+      .then(function (res) {
+        if (!res.ok) throw new Error('bad');
+        form.style.display = 'none'; $('zfbThanks').style.display = 'block';
+        if (Number(rating.value) >= 4) $('zfbShare').style.display = 'block';
+      })
+      .catch(function () {
+        btn.disabled = false; btn.textContent = 'Send feedback';
+        err.textContent = 'Sorry, that didn’t send. Please check your connection and try again.';
+      });
+  });
+})();
 </script>
 </body>
 </html>
